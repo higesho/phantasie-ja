@@ -10,7 +10,7 @@
      str: u8 長さ + バイト列 + 0
      照合値は小文字に揃えた FNV-1a。空白の連続は 1 個に数える（F_EXACT を除く）
 
-   日本語の中の印: 0x10+k = k 番目の印に当たった文字 */
+   日本語の中の印: 0x10+k = k 番目の印に当たった文字、0x0e = 説明書照合の答え */
 #include "phjp.h"
 #include <string.h>
 
@@ -32,6 +32,8 @@
 #define MAXTOKS (MAXRULES * 4)
 #define FNV_BASE 14695981039346656037ull
 #define FNV_PRIME 1099511628211ull
+#define M_ANSWER 0x0e
+#define MAXANSWER 255
 
 typedef struct {
     uint8_t kind, n, head;
@@ -61,6 +63,8 @@ static rule_t g_rules[MAXRULES];
 static seg_t g_segs[MAXRULES * 2];
 static tok_t g_toks[MAXTOKS];
 static int g_nrules, g_first[256], g_any = -1;
+static tok_t g_item[MAXANSWER], g_spell[MAXANSWER];
+static int g_nitem, g_nspell;
 
 static int low(int c) { return c >= 'A' && c <= 'Z' ? c + 32 : c; }
 static int is_digit(int c) { return c >= '0' && c <= '9'; }
@@ -80,6 +84,24 @@ static uint64_t take64(const uint8_t **p)
     memcpy(&v, *p, 8);
     *p += 8;
     return v;
+}
+
+/* 第1作の説明書照合の表: "PHA1" u8 品の数 u8 呪文の数、{ u8 長さ / u64 照合値 } */
+static int answers_init(void)
+{
+    const uint8_t *p = res_data(RES_ANSWER);
+    int i;
+
+    if (!p || memcmp(p, "PHA1", 4)) return 0;
+    g_nitem = p[4];
+    g_nspell = p[5];
+    p += 6;
+    for (i = 0; i < g_nitem + g_nspell; i++) {
+        tok_t *o = i < g_nitem ? &g_item[i] : &g_spell[i - g_nitem];
+        o->n = *p++;
+        o->hash = take64(&p);
+    }
+    return 1;
 }
 
 int text_init(void)
@@ -134,6 +156,7 @@ int text_init(void)
         }
     }
     g_nrules = n;
+    if (g_game == GAME_PH1 && !answers_init()) g_nitem = g_nspell = 0;
     LOG("辞書 %d 件", n);
     return 1;
 }
@@ -168,6 +191,7 @@ typedef struct {
 static uint8_t g_text[MAXROWS][COLS + 1];
 static span_t g_span[MAXROWS][2][COLS];
 static uint32_t g_stamp;
+static int g_nrows;
 
 static const span_t *spans(const uint8_t *t, int i, int exact)
 {
@@ -351,6 +375,57 @@ static int try_rule(int idx, const uint8_t *t, int i, const uint8_t *above, cons
     return 1;
 }
 
+/* ---- 説明書照合の答え（第1作） ---- */
+
+static int number(const uint8_t *t, int a, int b)
+{
+    int v = 0;
+    if (a >= b) return -1;
+    for (; a < b; a++) {
+        if (!is_digit(t[a]) || v > 999) return -1;
+        v = v * 10 + t[a] - '0';
+    }
+    return v;
+}
+
+static int line_ends(const uint8_t *t, int i)
+{
+    while (i < COLS && t[i] == ' ') i++;
+    return i >= COLS || !t[i];
+}
+
+/* 問いの印に当たった語から正解を引き、下に並ぶ「n. 選択肢」の n を返す。見つからなければ 0
+   品名の問いの選択肢は品番、呪文の番号の問いの選択肢は呪文名 */
+static int answer_key(const uint8_t *t, int kind, int a, int b)
+{
+    int ri = (int)((t - g_text[0]) / (COLS + 1)), item = 0, spell = 0, i, r;
+
+    if (kind == P_NUM) {
+        spell = number(t, a, b);
+        if (spell < 1 || spell > g_nspell) return 0;
+    } else {
+        for (i = 0; i < g_nitem && !item; i++)
+            if (lit(t, a, 0, g_item[i].n, g_item[i].hash) == b) item = i + 1;
+        if (!item) return 0;
+    }
+    for (r = ri + 1; r < g_nrows; r++) {
+        const uint8_t *s = g_text[r];
+        int j, e;
+        for (i = 0; i < COLS && s[i] == ' '; i++);
+        if (i + 3 >= COLS || s[i] < '1' || s[i] > '3' || s[i + 1] != '.' || s[i + 2] != ' ') continue;
+        j = i + 3;
+        if (item) {
+            for (e = j; e < COLS && is_digit(s[e]); e++);
+            if (number(s, j, e) != item) continue;
+        } else {
+            e = lit(s, j, 0, g_spell[spell - 1].n, g_spell[spell - 1].hash);
+            if (e < 0) continue;
+        }
+        if (line_ends(s, e)) return s[i] - '0';
+    }
+    return 0;
+}
+
 /* ---- 描き替えの決定 ---- */
 
 static int put_bytes(uint8_t *out, int n, const uint8_t *s, int len)
@@ -370,6 +445,16 @@ static void expand(const rule_t *r, const cand_t *c, const uint8_t *t, const uin
         if (o->kind <= P_OPT && nk < MAXCAP) kind[nk++] = o->kind;
     for (p = ja; *p; p++) {
         int k = *p - 0x10;
+        if (*p == M_ANSWER) {
+            /* EUC-JP の「（答え：n番）」。選択肢がまだ出ていなければ何も足さない */
+            uint8_t s[] = "\xa1\xca\xc5\xfa\xa4\xa8\xa1\xa7" "0" "\xc8\xd6\xa1\xcb";
+            int key = nk ? answer_key(t, kind[0], c->cap[0].a, c->cap[0].b) : 0;
+            if (key) {
+                s[8] = (uint8_t)('0' + key);
+                n = put_bytes(out, n, s, sizeof s - 1);
+            }
+            continue;
+        }
         if (*p < 0x10 || *p >= 0x10 + MAXCAP) {
             n = put_bytes(out, n, p, 1);
         } else if (k < nk) {
@@ -508,6 +593,7 @@ int text_translate(const row_t *rows, int nrows, op_t *ops)
 
     if (!g_nrules) return 0;
     g_stamp++;
+    g_nrows = nrows;
     for (i = 0; i < nrows; i++) {
         for (k = 0; k < COLS; k++) g_text[i][k] = rows[i].c[k].ch;
         g_text[i][COLS] = 0;

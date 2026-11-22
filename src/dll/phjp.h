@@ -11,6 +11,7 @@ extern int g_game;
 #define RES_ASCII16 32
 #define RES_KANJI14 33
 #define RES_ASCII14 34
+#define RES_ANSWER 35 /* 第1作の説明書照合の答え */
 
 #define COLS 40
 #define MAXROWS 96

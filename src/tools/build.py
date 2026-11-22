@@ -19,6 +19,7 @@ TR = os.path.join(WORK, 'translation')
 GEN = os.path.join(WORK, 'dll', 'gen')
 FONT = os.path.join(os.path.dirname(os.path.dirname(WORK)), 'Arena', 'jp_work', 'font')
 sys.path.insert(0, HERE)
+import answers
 import check_batch
 import ph2text
 
@@ -207,7 +208,12 @@ class Rules:
     def ja_bytes(ja, kinds):
         count = collections.Counter()
         out = bytearray()
-        for part in re.split(r'(\{(?:[nstc]|\d)\})', ja):
+        for part in re.split(r'(\{(?:[nstca]|\d)\})', ja):
+            if part == '{a}':  # 説明書照合の答え。押す番号は DLL が画面から決める
+                if not kinds:
+                    raise ValueError('答えの印は印のある文型だけ')
+                out.append(0x0e)
+                continue
             m = re.fullmatch(r'\{([nstc]|\d)\}', part)
             if not m:
                 bad = check_batch.bad_chars(part)
@@ -423,7 +429,7 @@ def ui_rules(rules, game):
                 if plain_term(en):
                     flags |= F_TERM
             # 手引きで引く品名は英語のまま。品名だけの用語より必ず優先する
-            bonus = 200 if en.startswith('{s}? (page') else 2
+            bonus = 200 if '{a}' in ja else 2
             rules.add('ui', en, [] if ja == '=' else [(0, 0, 0, ja)], flags, bonus=bonus)
             continue
         if MARK.search(en):
@@ -438,6 +444,21 @@ def ui_rules(rules, game):
                 segs.append((at + lead, len(e) - lead, 0, j))
             at += len(e)
         rules.add('ui', ''.join(ef), segs, F_EXACT, bonus=2)
+
+
+def choice_rules(rules, parts, trans):
+    # 呪文の三択「n. 呪文名」。番号の点の後ろは語の区切りに数えないので、番号ごと訳す
+    names = {}
+    for p in parts:
+        ja = trans.get(p['id'], trans.get(p.get('same')))
+        if ja and ja != '=':
+            names.setdefault(p['en'], ja)
+    for en in answers.ph1_tables()[1]:
+        if en not in names:
+            errors.append('三択: 呪文名の訳が無い | %s' % en)
+            continue
+        for k in (1, 2, 3):
+            rules.add('三択', '%d. %s' % (k, en), [(0, 0, 0, '%d. %s' % (k, names[en]))], F_ISOL, bonus=2)
 
 
 def load_glossary():
@@ -469,6 +490,10 @@ def translations(partial):
                 and re.search('[ぁ-ん一-龠]$', t) and check_batch.width(t) + 2 <= p['max']):
             t += '。'
         trans[p['id']] = t
+    # 第3作の説明書照合: 問いの次の行に答えを出す
+    for i, n in answers.ph3_answers().items():
+        if i in trans:
+            trans[i] = '%s^（答え：%d）' % (trans[i], n)
     lack = [p['id'] for p in parts if p['id'] not in trans and p.get('same') not in trans]
     if lack:
         print('訳が無い %d 件: %s' % (len(lack), ' '.join(lack[:8])))
@@ -492,6 +517,8 @@ def main():
             if canon:
                 print('第%d作 同じ形の字: %s' % (game, ' '.join('%c=%c' % kv for kv in canon.items())))
         rules = Rules(canon)
+        if game == 1:
+            res[35] = answers.pack(canon, fnv)
         ui_rules(rules, game)
         mine = collections.defaultdict(list)
         for p in parts:
@@ -503,6 +530,8 @@ def main():
         for it in items:
             if it['id'] in mine:
                 part_rules(rules, it, mine[it['id']], trans)
+        if game == 1:
+            choice_rules(rules, [p for p in parts if p['game'] == 1], trans)
         for en, ja in glossary.items():
             flags = F_TERM | (F_ISOL if short(en) else 0)
             rules.add('用語', en, [(0, 0, 0, ja)], flags)
