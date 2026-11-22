@@ -1,0 +1,4 @@
+*.zip
+__pycache__/
+/src/dll/out*/
+/src/dll/gen/
