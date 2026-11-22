@@ -3,7 +3,8 @@
 GOG 版 Phantasie Memorial Set 用の `winmm.dll` と、それを組み立てる道具です。
 
 - `dll/` … winmm.dll の本体。`build.bat`（Visual Studio の x86 の cl と rc）で `dll/out/winmm.dll` ができます
-- `dll/cov.bat` … 検査用の coverage.exe・glyphcheck.exe を作る
+- `dll/dbxfind.c` … DOSBox（公式の 0.72〜0.74 系）の描画の関数を、起動時に命令の形で探す
+- `dll/cov.bat` … 検査用の coverage.exe・glyphcheck.exe・dbxcheck.exe を作る
 - `tools/build.py` … 訳とフォントから DLL に入れるデータを作り、`build.bat` を呼ぶ
 - `tools/answers.py` … 説明書照合の答えの表をゲームのファイルから作る
 - `tools/check_batch.py` … 訳を検査する

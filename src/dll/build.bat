@@ -5,7 +5,7 @@ call "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\v
 cd /d "%~dp0"
 set OUT=out
 set EXTRA=
-set SRC=main.c proxy.c dosbox.c applewin.c overlay.c text.c glyphs.c
+set SRC=main.c proxy.c dosbox.c dbxfind.c applewin.c overlay.c text.c glyphs.c
 if "%1"=="test" set OUT=out_test
 if "%1"=="test" set EXTRA=/DPHJP_TEST
 if "%1"=="test" set SRC=%SRC% testctl.c
