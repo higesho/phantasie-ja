@@ -52,7 +52,8 @@ static int exists(const char *dir, const char *rel)
 
 static int find_game(void)
 {
-    char *d = g_dir, *s;
+    char *d = g_dir, *s, cmd[2048];
+    int p1, p3;
     GetModuleFileNameA(NULL, d, MAX_PATH);
     s = strrchr(d, '\\');
     if (!s) return GAME_NONE;
@@ -62,9 +63,17 @@ static int find_game(void)
     }
     if (_stricmp(s + 1, "DOSBox.exe")) return GAME_NONE;
     s[1] = 0;
-    if (exists(d, "..\\GAME\\PH1\\PHANTASI.EXE")) return GAME_PH1;
-    if (exists(d, "..\\GAME\\PH3\\MAIN.EXE")) return GAME_PH3;
-    return GAME_NONE;
+    p1 = exists(d, "..\\GAME\\PH1\\PHANTASI.EXE");
+    p3 = exists(d, "..\\GAME\\PH3\\MAIN.EXE");
+    if (p1 && p3) {
+        /* Steam 版は一つの DOSBox を両作で使う。起動の設定（phantasieN-*.conf）で見分ける */
+        lstrcpynA(cmd, GetCommandLineA(), sizeof cmd);
+        for (s = cmd; *s; s++) if (*s >= 'A' && *s <= 'Z') *s += 32;
+        if (strstr(cmd, "phantasie3")) return GAME_PH3;
+        if (strstr(cmd, "phantasie1")) return GAME_PH1;
+        return GAME_NONE;
+    }
+    return p1 ? GAME_PH1 : p3 ? GAME_PH3 : GAME_NONE;
 }
 
 BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID res)

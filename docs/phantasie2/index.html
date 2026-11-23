@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ファンタジーII 日本語化パッチ — ファンタジー三部作 日本語化プロジェクト</title>
-<meta name="description" content="GOG.com 版 Phantasie II（Apple II 版）を日本語で遊べるようにする、非公式のファンメイドパッチ。">
+<meta name="description" content="GOG.com 版・Steam 版 Phantasie II（Apple II 版）を日本語で遊べるようにする、非公式のファンメイドパッチ。">
 <meta property="og:type" content="website">
 <meta property="og:title" content="ファンタジーII 日本語化パッチ — ファンタジー三部作 日本語化プロジェクト">
-<meta property="og:description" content="GOG.com 版 Phantasie II（Apple II 版）を日本語で遊べるようにする、非公式のファンメイドパッチ。">
+<meta property="og:description" content="GOG.com 版・Steam 版 Phantasie II（Apple II 版）を日本語で遊べるようにする、非公式のファンメイドパッチ。">
 <meta property="og:url" content="https://higesho.github.io/phantasie-ja/phantasie2/">
 <meta property="og:image" content="https://higesho.github.io/phantasie-ja/phantasie2/img/monster.png">
 <link rel="stylesheet" href="../style.css">
@@ -20,10 +20,10 @@
 <section class="hero">
 <p class="sub">Phantasie II</p>
 <h1>ファンタジーII 日本語化パッチ</h1>
-<p class="tag">GOG.com 版「Phantasie Memorial Set」に収録された Apple II 版の「Phantasie II」を日本語で遊べるようにする、非公式のファンメイドパッチです。
+<p class="tag">GOG.com 版・Steam 版「Phantasie Memorial Set」に収録された Apple II 版の「Phantasie II」を日本語で遊べるようにする、非公式のファンメイドパッチです。
 できごとの文、人物のせりふ、巻物、戦闘の知らせ、町の施設、キャラクター作成、呪文・品物・怪物の名前、メニューまで、ゲームの中の文章を日本語で表示します。
 ゲームのフォルダにファイルを置くだけで日本語になり、消せば英語に戻ります。</p>
-<p><a class="dl" href="https://github.com/higesho/phantasie-ja/releases/tag/v1.2">ダウンロード（GitHub）</a></p>
+<p><a class="dl" href="https://github.com/higesho/phantasie-ja/releases/tag/v1.3">ダウンロード（GitHub）</a></p>
 </section>
 
 <div class="text">
@@ -46,15 +46,24 @@
 
 <div class="text">
 <h2>入れ方</h2>
+<h3>GOG.com 版</h3>
 <ol>
-<li>ダウンロードした <code>Phantasie_JP.zip</code> の中身を、ゲームのフォルダ（<code>Phantasie 1</code>・<code>Phantasie 2</code>・<code>Phantasie 3</code> の三つのフォルダがある場所）にそのまま展開します。</li>
+<li>ダウンロードした <code>Phantasie_JP.zip</code> の「GOG版」フォルダの中身を、ゲームのフォルダ（<code>Phantasie 1</code>・<code>Phantasie 2</code>・<code>Phantasie 3</code> の三つのフォルダがある場所）に写します。</li>
 <li><code>Phantasie 2\winmm.dll</code> が増えれば、この作品は日本語になります。元からあるファイルは上書きしません。</li>
 <li>いつもどおり GOG Galaxy やショートカットから起動します。</li>
+</ol>
+<h3>Steam 版</h3>
+<ol>
+<li>Steam のライブラリで作品を右クリックし、「管理」→「ローカルファイルを閲覧」でゲームのフォルダ（<code>DOSBOX</code>・<code>GAME</code>・<code>GAMES</code> のフォルダと <code>AppleWin.exe</code> がある場所）を開きます。</li>
+<li><code>Phantasie_JP.zip</code> の「Steam版」フォルダの中身を、そのフォルダに写します。</li>
+<li><code>winmm.dll</code>（<code>AppleWin.exe</code> の隣）が増えれば、この作品は日本語になります。元からあるファイルは上書きしません。</li>
+<li>いつもどおり Steam から起動します。</li>
 </ol>
 
 <h2>外し方</h2>
 <ul>
-<li><code>Phantasie 2\winmm.dll</code> を消します。</li>
+<li>GOG.com 版は <code>Phantasie 2\winmm.dll</code> を消します。</li>
+<li>Steam 版は <code>winmm.dll</code> を消します。</li>
 </ul>
 <p>セーブデータは英語版と共通です。日本語版と英語版を行き来しても、続きから遊べます。</p>
 
@@ -65,7 +74,7 @@
 <li>名前、合言葉、謎かけの答えは英字で入力します。</li>
 <li>絵に描かれた文字（題字、看板など）と、縦書きの短い略語は英語のままです。</li>
 <li>長い文が一字ずつ出る場面や、窓に一部が隠れた行では、途中まで英語で見えることがあります。</li>
-<li>GOG.com 版に同梱の AppleWin 1.30.14.1 用です。ほかの版では英語のまま動きます。</li>
+<li>同梱の AppleWin 1.30.14.1 用です。ほかの版では英語のまま動きます。</li>
 <li>日本語にならないときは、<code>AppleWin.exe</code> のプロパティの「互換性」に設定がないか確かめ、あれば外してください。</li>
 </ul>
 

@@ -1,6 +1,7 @@
 """配布用の zip を作る: make_dist.py（先に build.py と check_clean.py）
 
-zip の一番上は Phantasie 1〜3 のフォルダ。ゲームのフォルダにそのまま展開できる。
+zip の一番上は「GOG版」「Steam版」のフォルダ。それぞれの中身をゲームのフォルダに写す。
+GOG 版は作品ごとのフォルダ、Steam 版は三作が一つのフォルダ（DOSBOX は第1・3作で共用）。
 """
 import hashlib
 import os
@@ -11,7 +12,8 @@ DLL = os.path.join(WORK, 'dll', 'out', 'winmm.dll')
 SRC = os.path.join(WORK, 'dist_src')
 FONT = os.path.join(os.path.dirname(os.path.dirname(WORK)), 'Arena', 'jp_work', 'font', 'LICENSE')
 OUT = os.path.join(WORK, 'dist', 'Phantasie_JP.zip')
-PLACES = ('Phantasie 1/DOSBOX/winmm.dll', 'Phantasie 2/winmm.dll', 'Phantasie 3/DOSBOX/winmm.dll')
+PLACES = ('GOG版/Phantasie 1/DOSBOX/winmm.dll', 'GOG版/Phantasie 2/winmm.dll', 'GOG版/Phantasie 3/DOSBOX/winmm.dll',
+          'Steam版/DOSBOX/winmm.dll', 'Steam版/winmm.dll')
 
 
 def notepad(text):

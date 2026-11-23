@@ -1,6 +1,6 @@
 # ファンタジー三部作 日本語化 ソース
 
-GOG 版 Phantasie Memorial Set 用の `winmm.dll` と、それを組み立てる道具です。
+GOG 版・Steam 版 Phantasie Memorial Set 用の `winmm.dll` と、それを組み立てる道具です。
 
 - `dll/` … winmm.dll の本体。`build.bat`（Visual Studio の x86 の cl と rc）で `dll/out/winmm.dll` ができます
 - `dll/dbxfind.c` … DOSBox（公式の 0.72〜0.74 系）の描画の関数を、起動時に命令の形で探す
