@@ -4,7 +4,7 @@ GOG.com 版・Steam 版「Phantasie Memorial Set」に収録されたファン�
 開発元・販売元とは関係ありません。
 
 - サイト（作品の紹介・入れ方）: https://higesho.github.io/phantasie-ja/
-- ダウンロード: [Phantasie_JP.zip](https://github.com/higesho/phantasie-ja/releases/tag/v1.3)
+- ダウンロード: [Phantasie_JP.zip](https://github.com/higesho/phantasie-ja/releases/tag/v1.4)
 - 日本語化プロジェクトの一覧: https://higesho.github.io/ja/
 
 ## 作品一覧
